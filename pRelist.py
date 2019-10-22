@@ -3,7 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException
 import pickle
 import time
 import random
@@ -49,9 +49,9 @@ def share(driver, item):
         try:
             item.click()
             clicked = True
-        except ElementClickInterceptedException:
-            input("Damn you captcha! Please fill out captcha and press ENTER to continue")
-    time.sleep(random.randint(1, 3))
+        except ElementClickInterceptedException and ElementNotInteractableException:
+            input("Oops! Something went wrong. Please fix it, then click ENTER to continue.")
+    time.sleep(random.randint(0, 1))
     if clicked:
         cts = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pm-followers-share-link")))
         cts.click()
@@ -65,9 +65,9 @@ def shareAll(driver):
                 share(driver, sharer)
                 found = True
             except NoSuchElementException:
-                time.sleep(random.randint(1, 4))
+                time.sleep(random.randint(0, 2))
                 driver.execute_script("window.scrollTo(0, height)")
-        time.sleep(random.randint(1, 10))
+        time.sleep(random.randint(1, 2))
 
 def main():
     driver = start()
