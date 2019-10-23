@@ -22,7 +22,7 @@ def load_cookie(driver, path):
              driver.add_cookie(cookie)
     
 def start():
-    driver = webdriver.Chrome('C:/Users/moore/Documents/chromedriver.exe')
+    driver = webdriver.Chrome()
     driver.get("https://poshmark.com/login")
     foo = input()
     return driver
