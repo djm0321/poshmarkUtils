@@ -67,9 +67,9 @@ def shareAll(driver):
                 share(driver, sharer)
                 found = True
             except NoSuchElementException:
-                time.sleep(random.randint(0, 2))
+                time.sleep(random.randint(1, 2))
                 driver.execute_script("window.scrollTo(0, height)")
-        time.sleep(random.randint(1, 2))
+        time.sleep(random.randint(1, 3))
 
 def main():
     driver = start()
