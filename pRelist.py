@@ -22,7 +22,7 @@ def load_cookie(driver, path):
              driver.add_cookie(cookie)
     
 def start():
-    driver = webdriver.Chrome('chromedriver.exe')
+    driver = webdriver.Chrome('C:/Users/moore/Documents/chromedriver.exe')
     driver.get("https://poshmark.com/login")
     foo = input()
     return driver
@@ -49,7 +49,9 @@ def share(driver, item):
         try:
             item.click()
             clicked = True
-        except ElementClickInterceptedException and ElementNotInteractableException:
+        except ElementClickInterceptedException:
+            input("Oops! Something went wrong. Please fix it, then click ENTER to continue.")
+        except  ElementNotInteractableException:
             input("Oops! Something went wrong. Please fix it, then click ENTER to continue.")
     time.sleep(random.randint(0, 1))
     if clicked:
