@@ -7,6 +7,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementClickInter
 import pickle
 import time
 import random
+from pClass import *
 
 
 PAUSE_FOR_SHARING = .5
@@ -22,9 +23,8 @@ def load_cookie(driver, path):
              driver.add_cookie(cookie)
     
 def start():
-    driver = webdriver.Chrome("/Users/dj/Documents/chromedriver")
+    driver = webdriver.Chrome("/Users/dj/Downloads/chromedriver")
     driver.get("https://poshmark.com/login")
-    foo = input()
     return driver
 
 def getToCloset(driver):
@@ -52,30 +52,83 @@ def share(driver, item):
         except ElementClickInterceptedException:
             input("Oops! Something went wrong. Please fix it, then click ENTER to continue.")
         except  ElementNotInteractableException:
-            input("Oops! Something went wrong. Please fix it, then click ENTER to continue.")
+            input("Oops! Something went wrong. Please fix it, then click ENTER to continue :(")
     time.sleep(random.randint(0, 1))
     if clicked:
         cts = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pm-followers-share-link")))
         cts.click()
 
-def shareAll(driver):
+def makeItemClass(driver):
     sharers = driver.find_elements_by_class_name("share")
-    for sharer in sharers:
+    items = driver.find_elements_by_class_name("price")
+    prices = list()
+    for x in range(len(items)):
+        prices.append(int(items[x].text.split(" ", 1)[0][1:]))
+    itemArray = list()
+    for x in range(len(sharers)):
+        itemArray.append(Item(sharers[x], prices[x]))
+    return itemArray
+
+def shareAll(driver, itemArray):
+    print(itemArray[0].price)
+    driver.execute_script("arguments[0].scrollIntoView();", itemArray[0].share_button)
+    driver.execute_script("window.scrollTo(0, -250)")
+    for item in itemArray:
         found = False
         while not found:
             try:
-                share(driver, sharer)
+                share(driver, item.share_button)
                 found = True
             except NoSuchElementException:
                 time.sleep(random.randint(1, 2))
                 driver.execute_script("window.scrollTo(0, height)")
         time.sleep(random.randint(1, 3))
 
-def main():
+def shareGroups(driver):
+    print("Maybe this will work later")
+
+def signIn(driver, username, password):
+    login = driver.find_element_by_name("login_form[username_email]")
+    pwd = driver.find_element_by_name("login_form[password]")
+    login.send_keys(username)
+    pwd.send_keys(password)
+    pwd.send_keys(Keys.RETURN)
+    time.sleep(2)
+    try:
+        driver.find_element_by_id("rc-anchor-container")
+    except: 
+        try:
+            driver.find_element_by_class_name("base_error_message")
+        except:
+            return 2
+        else:
+            input()
+            return 2
+    else:
+        return 0
+
+
+def begin(username, password, minPrice):
     driver = start()
-    getToCloset(driver)
-    loadWholePage(driver)
-    shareAll(driver)
+    runState = signIn(driver, username, password)
+    if runState == 2:
+        getToCloset(driver)
+        loadWholePage(driver)
+        itemArray = makeItemClass(driver)
+        if minPrice != None:
+            itemArray = sortByPrice(minPrice, itemArray)
+        shareAll(driver, itemArray)
+        driver.close()
+    elif runState == 1:
+        print("You dumb fuck you put the wrong shit in idiot now go try again and try not to be as bad at doing stuff this time")
+        driver.close()
+    elif runState == 0:
+        print("Captcha has shown up (probably bc u suck at entering ur info). Please log in on site, complete captcha and then continue by pressing ENTER")
+        foo = input()
+        getToCloset(driver)
+        loadWholePage(driver)
+        shareAll(driver)
+        driver.close()
 
 # save_cookie(driver, '~/Documents/PoshmarkRelister/cookie.txt')
 # driver = start()
@@ -85,4 +138,3 @@ def main():
 # pwd = driver.find_element_by_name("login_form[password]")
 # pwd.send_keys("pay4college2day")
 # pwd.send_keys(Keys.RETURN)
-main()
