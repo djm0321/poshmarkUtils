@@ -27,8 +27,31 @@ def start():
     driver.get("https://poshmark.com/login")
     return driver
 
-def getToCloset(driver):
-    driver.get("https://poshmark.com/closet/jenwm5?sort_by=price_asc&availability=available")
+def getToCloset(driver, username, fromUser):
+    first = True
+    urlEnd = ""
+    passIns = ["", "", "", ""]
+    dept = ""
+    cat = ""
+    sort = "price_asc"
+    avail = "available"
+    base = "https://poshmark.com/closet/" + username
+    if (fromUser[0] != ""):
+        passIns[0] = "department=" + fromUser[0]
+    if (fromUser[1] != ""):
+       passIns[1] = "category=" + fromUser[1]
+    if (fromUser[2] != ""):
+        passIns[2] = "sort_by=" + fromUser[2]
+    passIns[3] = "availability=available"
+    
+    for x in passIns:
+        if (x != ""):
+            if (first):
+                urlEnd = "?" + x
+                first = False
+            else:
+                urlEnd = urlEnd + "&" + x
+    driver.get(base + urlEnd)
     dims = driver.get_window_size()
     height = dims['height']
 
@@ -70,7 +93,6 @@ def makeItemClass(driver):
     return itemArray
 
 def shareAll(driver, itemArray):
-    print(itemArray[0].price)
     driver.execute_script("arguments[0].scrollIntoView();", itemArray[0].share_button)
     driver.execute_script("window.scrollTo(0, -250)")
     for item in itemArray:
@@ -84,8 +106,8 @@ def shareAll(driver, itemArray):
                 driver.execute_script("window.scrollTo(0, height)")
         time.sleep(random.randint(1, 3))
 
-def shareGroups(driver):
-    print("Maybe this will work later")
+def getGroups(driver, checkBoxes):
+    print("dab")
 
 def signIn(driver, username, password):
     login = driver.find_element_by_name("login_form[username_email]")
@@ -107,17 +129,48 @@ def signIn(driver, username, password):
     else:
         return 0
 
+def sharer(driver, username, passIns, minPrice):
+    getToCloset(driver, username, passIns)
+    loadWholePage(driver)
+    itemArray = makeItemClass(driver)
+    if minPrice != None:
+        itemArray = sortByPrice(minPrice, itemArray)
+    shareAll(driver, itemArray)
 
-def begin(username, password, minPrice):
+def begin(username, password, minPrice, sortBy, checkBoxes):
     driver = start()
+    male = checkBoxes[1]
+    female = checkBoxes[2]
+    children = checkBoxes[3]
+    maleCats = getCats(male)
+    for x in maleCats:
+        print(x)
+    passIns = ["", "", sortBy]
     runState = signIn(driver, username, password)
     if runState == 2:
-        getToCloset(driver)
-        loadWholePage(driver)
-        itemArray = makeItemClass(driver)
-        if minPrice != None:
-            itemArray = sortByPrice(minPrice, itemArray)
-        shareAll(driver, itemArray)
+        if (checkBoxes[0]):
+            if (male[0]):
+                maleCats = getCats(male)
+                passIns[0] = "Men"
+                if maleCats == None:
+                    sharer(driver, username, passIns, minPrice)
+                else:
+                    for x in maleCats:
+                        passIns[1] = x
+                        sharer(driver, username, passIns, minPrice)
+            if (female[0]):
+                femaleCats = getCats(female)
+                passIns[0] = "Women"
+                if femaleCats == None:
+                    sharer(driver, username, passIns, minPrice)
+                else:
+                    for x in femaleCats:
+                        passIns[1] = x
+                        sharer(driver, username, passIns, minPrice)
+            if children:
+                print("kids suck")
+        else:
+            sharer(driver, username, passIns, minPrice)
         driver.close()
     elif runState == 1:
         print("You dumb fuck you put the wrong shit in idiot now go try again and try not to be as bad at doing stuff this time")
