@@ -149,7 +149,6 @@ class MyFrame(wx.Frame):
         elif sortBySelection == 5:
             enter4 = "relevance"
         enter5 = self.getCheckBoxes()
-        print(enter4)
         if not enter1 or not enter2:
             print("Please enter a username and password")
         elif enter3.isdigit():
