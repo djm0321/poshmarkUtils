@@ -106,9 +106,6 @@ def shareAll(driver, itemArray):
                 driver.execute_script("window.scrollTo(0, height)")
         time.sleep(random.randint(1, 3))
 
-def getGroups(driver, checkBoxes):
-    print("dab")
-
 def signIn(driver, username, password):
     login = driver.find_element_by_name("login_form[username_email]")
     pwd = driver.find_element_by_name("login_form[password]")
@@ -143,8 +140,6 @@ def begin(username, password, minPrice, sortBy, checkBoxes):
     female = checkBoxes[2]
     children = checkBoxes[3]
     maleCats = getCats(male)
-    for x in maleCats:
-        print(x)
     passIns = ["", "", sortBy]
     runState = signIn(driver, username, password)
     if runState == 2:
