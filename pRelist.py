@@ -4,6 +4,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, ElementNotInteractableException
+from send2trash import send2trash
+import requests
 import pickle
 import time
 import random
@@ -23,7 +25,7 @@ def load_cookie(driver, path):
              driver.add_cookie(cookie)
     
 def start():
-    driver = webdriver.Chrome("/Users/dj/Downloads/chromedriver")
+    driver = webdriver.Chrome("/Users/dj/Documents/chromedriver")
     driver.get("https://poshmark.com/login")
     return driver
 
@@ -67,10 +69,14 @@ def loadWholePage(driver):
     driver.execute_script("window.scrollTo(document.body.scrollHeight, 0)") 
 
 def share(driver, item):
+    print("1")
     clicked = False
+    shared = False
     while not clicked:
         try:
+            print("2")
             item.click()
+            print("3")
             clicked = True
         except ElementClickInterceptedException:
             input("Oops! Something went wrong. Please fix it, then click ENTER to continue.")
@@ -78,8 +84,19 @@ def share(driver, item):
             input("Oops! Something went wrong. Please fix it, then click ENTER to continue :(")
     time.sleep(random.randint(0, 1))
     if clicked:
-        cts = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "pm-followers-share-link")))
-        cts.click()
+        cts = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, "pm-followers-share-linK")))
+        while not shared:
+            try:
+                cts.click()
+                shared = True
+            except ElementClickInterceptedException:
+                input("CaptchaCaptchaCaptcha")
+            except ElementNotInteractableException:
+                input("I Dont think that this is necessary but whatever ill leave it in for now")
+        time.sleep(random.randint(0, 1))
+
+# pm-party-share-link
+# pm-followers-share-linK
 
 def makeItemClass(driver):
     sharers = driver.find_elements_by_class_name("share")
@@ -139,7 +156,7 @@ def begin(username, password, minPrice, sortBy, checkBoxes):
     male = checkBoxes[1]
     female = checkBoxes[2]
     children = checkBoxes[3]
-    maleCats = getCats(male)
+    home = checkBoxes[4]
     passIns = ["", "", sortBy]
     runState = signIn(driver, username, password)
     if runState == 2:
@@ -162,8 +179,11 @@ def begin(username, password, minPrice, sortBy, checkBoxes):
                     for x in femaleCats:
                         passIns[1] = x
                         sharer(driver, username, passIns, minPrice)
-            if children:
-                print("kids suck")
+            if children[0]:
+                passIns[0] = "Kids"
+                sharer(driver, username, passIns, minPrice)
+            if home[0]:
+                passIns[0] = "Home"
         else:
             sharer(driver, username, passIns, minPrice)
         driver.close()
@@ -178,11 +198,43 @@ def begin(username, password, minPrice, sortBy, checkBoxes):
         shareAll(driver)
         driver.close()
 
-# save_cookie(driver, '~/Documents/PoshmarkRelister/cookie.txt')
-# driver = start()
-# driver.get("https://poshmark.com/login")
-# login = driver.find_element_by_name("login_form[username_email]")
-# login.send_keys("jenwm5")
-# pwd = driver.find_element_by_name("login_form[password]")
-# pwd.send_keys("pay4college2day")
-# pwd.send_keys(Keys.RETURN)
+def getLabels(driver):
+    driver.get("https://poshmark.com/order/sales")
+    items = driver.find_elements_by_class_name("status")
+    soldItems = 0
+    for x in items:
+        if soldItems == 0:
+            value = x.find_elements_by_class_name("value")
+            print(value[0].text)
+            soldItems = soldItems + 1
+    print(soldItems)
+    # sales = driver.find_elements_by_class_name("item")
+    # for x in range(0, soldItems):
+    #     sales[x].click()
+    
+def resellItem():
+    driver = start()
+    driver.get("https://poshmark.com/listing/Dunhill-brown-down-parka-coat-jacket-XL-5e4b5e44969d1f0321df9718")
+    pix = driver.find_elements_by_class_name("carousel-vertical__item")
+    desc = driver.find_element_by_class_name("listing__description")
+    descText = desc.text
+    print(descText)
+    picURLs = list()
+    jpgNames = list()
+    for x in range(0, len(pix)):
+        temp = pix[x].find_element_by_class_name("img__container").find_element_by_tag_name("img").get_attribute("data-src")
+        picURLs.append(temp.replace("s_", "m_", 1))
+        temp2 = picURLs[x].split("/")
+        jpgNames.append(temp2[len(temp2) - 1])
+
+    
+    for x in range(0, len(picURLs)):
+        f = open(jpgNames[x], 'wb')
+        f.write(requests.get(picURLs[x]).content)
+        f.close()
+
+    input()
+
+    for x in range(0, len(picURLs)):
+        send2trash(jpgNames[x])
+ 

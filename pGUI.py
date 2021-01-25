@@ -94,9 +94,15 @@ class MyFrame(wx.Frame):
         childCheckBoxes.Add(self.children, 1, wx. ALL)
         self.Bind(wx.EVT_CHECKBOX, self.on_checked_main)
 
+        homeCheckBoxes = wx.BoxSizer(wx.VERTICAL)
+        self.home = wx.CheckBox(panel, label = "Home")
+        homeCheckBoxes.Add(self.home, 1, wx. ALL)
+        self.Bind(wx.EVT_CHECKBOX, self.on_checked_main)
+
         checkboxes.Add(self.maleCheckBoxes, 5, wx.ALL | wx.ALIGN_LEFT)
         checkboxes.Add(self.femaleCheckBoxes, 5, wx.ALL | wx.ALIGN_LEFT)
         checkboxes.Add(childCheckBoxes, 5, wx.ALL | wx.ALIGN_LEFT)
+        checkboxes.Add(homeCheckBoxes, 5, wx.ALL | wx.ALIGN_LEFT)
 
         self.vbox.Add(checkboxes, 0, wx.ALL | wx.CENTER, 5)
         panel.SetSizer(self.vbox)
@@ -113,6 +119,7 @@ class MyFrame(wx.Frame):
         femaleVals = [False] * 14
         femaleVals[0] = female
         children = self.children.GetValue()
+        home = self.home.GetValue()
         if male:
             x = 1
             for control in self.subBox.GetChildren():
@@ -127,8 +134,8 @@ class MyFrame(wx.Frame):
                 if isinstance(cbox, wx.CheckBox):
                     femaleVals[x] = cbox.GetValue()
                 x = x + 1
-        doThis = male or female or children
-        return [doThis, maleVals, femaleVals, [children]]
+        doThis = male or female or children or home
+        return [doThis, maleVals, femaleVals, [children], [home]]
     
     def on_press(self, event):
         enter1 = self.username.GetValue()
@@ -160,7 +167,7 @@ class MyFrame(wx.Frame):
         maleVal = self.male.GetValue()
         femaleVal = self.female.GetValue()
         if (femaleVal and maleVal):
-            self.SetSize(401, 450)
+            self.SetSize(450, 450)
         elif (femaleVal):
             self.SetSize(400, 450)
         elif (maleVal):
